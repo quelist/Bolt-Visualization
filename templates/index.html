@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+    <head>
+        <!-- Plotly.js -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </head>
+    <body>
+        <!-- Plotly chart will be drawn inside this DIV -->
+        <div id="myDiv"></div>
+    </body>
+</html>
+<script type="text/javascript">
+    function plot_graph(temp_data,hum_data,time_stamp){
+     var Temp = {
+       type: "scatter",
+       mode: "lines",
+       name: 'Temprature',
+       x:  time_stamp,
+       y: temp_data,
+       line: {color: '#17BECF'}
+     }
+     
+     var Hum = {
+       type: "scatter",
+       mode: "lines",
+       name: 'Humidity',
+       x: time_stamp,
+       y: hum_data,
+       line: {color: '#7F7F7F'}
+     }
+     
+     var data = [Temp,Hum];
+         
+     var layout = {
+       title: 'Bolt Temprature and Humidity', 
+       xaxis: {
+         autorange: true, 
+         range: ['2015-02-17', '2017-02-19'], 
+         rangeselector: {buttons: [
+             {
+               count: 1, 
+               label: '1m', 
+               step: 'month', 
+               stepmode: 'backward'
+             }, 
+             {
+               count: 6, 
+               label: '6m', 
+               step: 'month', 
+               stepmode: 'backward'
+             }, 
+             {step: 'all'}
+           ]}, 
+         rangeslider: {range: ['2015-02-17', '2017-02-19']}, 
+         type: 'date'
+       }, 
+       yaxis: {
+         autorange: true, 
+         range: [86.8700008333, 138.870004167], 
+         type: 'linear'
+       }
+     };
+     
+     Plotly.newPlot('myDiv', data, layout);
+    }
+    
+    function fetch_sensor_data(){
+    var settings = {
+    "async": true,
+    "crossDomain": true,
+    "url": "http://13.232.16.201:5000/fetch_sensor_data",
+    "method": "GET"
+    }
+    
+    $.ajax(settings).done(function (response) {
+    var hum_data = [];
+    var temp_data = [];
+    var time_stamp = [];
+    for (index=0;index<response.data.length;index++){
+      hum_data.push(Number(response.data[index]['humidity']))
+      temp_data.push(Number(response.data[index]['temperature']))
+      date = response.data[index]['time_stamp']
+      date_with_format = moment(date).format('YYYY-MM-DD h:mm:ss');
+      time_stamp.push(date_with_format)
+    }
+    plot_graph(temp_data,hum_data,time_stamp)
+    });
+    
+    }
+    
+    fetch_sensor_data();
+</script>
